@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hunternexus"
+version = "0.1.0"
+description = "A staged, senior-methodology reconnaissance orchestrator for authorized security testing and bug bounty engagements"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Emmanuel Uwa", email = "facelesshunter-tech@users.noreply.github.com" },
+]
+dependencies = [
+    "click>=8.1",
+    "requests>=2.31",
+    "PyYAML>=6.0",
+    "dnspython>=2.4",
+    "cryptography>=41.0",
+    "mmh3>=4.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/facelesshunter-tech/hunterNexus"
+Repository = "https://github.com/facelesshunter-tech/hunterNexus"
+
+[project.scripts]
+hunternexus = "hunternexus.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hunternexus*"]

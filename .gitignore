@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+hunternexus-output/
+config/config.yaml
+*.db
+.pytest_cache/
+.DS_Store

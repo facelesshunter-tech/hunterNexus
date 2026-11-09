@@ -1,0 +1,6 @@
+click>=8.1
+requests>=2.31
+PyYAML>=6.0
+dnspython>=2.4
+cryptography>=41.0
+mmh3>=4.1

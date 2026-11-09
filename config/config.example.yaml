@@ -1,0 +1,124 @@
+# hunterNexus configuration
+#
+# Copy this file to config/config.yaml (or ~/.config/hunternexus/config.yaml)
+# and fill in whatever keys you actually have. hunterNexus is designed to
+# work with ZERO keys configured (free-tier/no-key sources + installed
+# binaries still function) and gets progressively more capable as you add
+# keys.
+#
+# Every key can also be set via environment variable instead of living in
+# this file: HUNTERNEXUS_<SOURCE>_API_KEY (e.g. HUNTERNEXUS_SHODAN_API_KEY).
+#
+# Recommended priority order for getting the most out of a fresh install:
+#   1. Chaos            -- free, projectdiscovery.io/chaos
+#   2. GitHub tokens     -- free, github.com/settings/tokens (get SEVERAL)
+#   3. Shodan            -- freemium, shodan.io
+#   4. Free/cheap misc   -- FacebookCT, c99/RiskIQ, dnsdumpster
+#   5. Paid/limited      -- everything else below
+
+api_keys:
+  # --- Priority 1 ------------------------------------------------------
+  chaos: ""                      # projectdiscovery.io/chaos -- feeds subfinder
+
+  # --- Priority 2: GitHub -- a LIST of tokens is strongly recommended. ---
+  # GitHub code search is rate-limited per token and non-exhaustive per
+  # query -- hunterNexus round-robins across all of these to get more
+  # exhaustive coverage.
+  github:
+    - ""   # github.com/settings/tokens (classic, no special scopes needed for code search)
+    - ""
+    - ""
+
+  # --- Priority 3 --------------------------------------------------------
+  shodan: ""                     # shodan.io/account -- used by port_scan.smap_scan
+
+  # --- Priority 4: free/cheap -------------------------------------------
+  c99: ""                        # community.riskiq.com/settings (RiskIQ) -- also used by subdomainfinder.c99.nl API below
+  sec_api: ""                    # sec-api.io -- free-tier signup; acquisitions.py subsidiary lookup from SEC filings
+  greyhatwarfare: ""             # buckets.grayhatwarfare.com -- open cloud-storage-bucket search
+  censys: ""                     # search.censys.io -- Personal Access Token, format "API_ID:SECRET" (internet_intel.censys_search)
+  urlscan: ""                    # urlscan.io/user/profile -- free-tier key works for search; submit needs it too (internet_intel.urlscan_*)
+  # FacebookCT requires an app, not a single key -- see docs/SETUP.md for
+  # the full "create app -> get client token -> get secret" walkthrough.
+  facebookct_app_id: ""
+  facebookct_client_token: ""
+  facebookct_secret: ""
+
+  # --- Priority 5: paid/limited sources -- see docs/SETUP.md for which
+  # require sales contact vs. instant signup ------------------------------
+  whoxy: ""                      # api.whoxy.com -- reverse_whois.py (~$10/1000 queries)
+  whoisxmlapi: ""                # whoisxmlapi.com -- reverse_dns.py shared-nameserver pivot
+  hostio: ""                     # host.io -- reverse_ip.py
+  securitytrails: ""             # securitytrails.com -- dmarc_pivot.py reverse search (best-effort, see module docstring)
+  crunchbase: ""                 # requires an ENTERPRISE agreement, not a free key -- see acquisitions.py
+  cisco_umbrella: ""             # named but not wired up to a specific module yet
+  dnsdb: ""                      # Farsight DNSDB -- feeds subfinder/amass as a source, not called directly by hunternexus
+  zetalytics: ""                 # named but not wired up to a specific module yet
+  spiderfoothx: ""               # named but not wired up to a specific module yet
+  netlas: ""                     # netlas.io -- feeds subfinder as a source
+  builtwith: ""                  # builtwith.com -- not called directly; relevant if you extend live_validation.py
+
+  # --- AI-assisted recon (subdomain-pattern guessing, acquisition
+  # cross-referencing) -----------------------------------------------------
+  # Any OpenAI-compatible endpoint works -- set ai.api_base below to point
+  # at a different provider or a local model server if you're not using
+  # OpenAI itself.
+  openai: ""
+
+ai:
+  api_base: "https://api.openai.com/v1"
+  model: "gpt-4"
+
+# External tool binaries: leave blank to search PATH (default), or set an
+# explicit path if a tool isn't on PATH. See docs/SETUP.md for install
+# instructions for every tool named here.
+tools:
+  subfinder: ""
+  amass: ""
+  bbot: ""
+  assetfinder: ""                # go install github.com/tomnomnom/assetfinder@latest -- fourth passive subdomain source
+  puredns: ""
+  dnsgen: ""
+  alterx: ""
+  naabu: ""
+  rustscan: ""
+  smap: ""
+  httpx: ""                      # must be projectdiscovery's httpx, NOT the Python `httpx` pip package
+  dnsx: ""                       # go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest -- bulk DNS resolution/wildcard filtering (dns_intel.py)
+  tlsx: ""                       # go install github.com/projectdiscovery/tlsx/cmd/tlsx@latest -- per-host TLS/cert probing (tls_probe.py)
+  wafw00f: ""                    # pip install wafw00f -- WAF fingerprinting (waf_detect.py)
+  uncover: ""                    # go install github.com/projectdiscovery/uncover/cmd/uncover@latest -- Shodan/Censys/etc. via one interface (internet_intel.py)
+  ffuf: ""                       # go install github.com/ffuf/ffuf/v2@latest -- directory/file content discovery (content_discovery.py)
+  katana: ""                     # go install github.com/projectdiscovery/katana/cmd/katana@latest -- JS-aware crawling (web_crawl.py)
+  gau: ""                        # go install github.com/lc/gau/v2/cmd/gau@latest -- historical URL mining (web_crawl.py)
+  xnLinkFinder: ""                # pip install xnLinkFinder -- endpoint extraction from JS (js_analysis.py)
+  secretfinder: ""                # github.com/m4ll0k/SecretFinder -- secret discovery in JS (js_analysis.py)
+  arjun: ""                      # pip install arjun -- hidden parameter discovery (parameter_discovery.py)
+  x8: ""                         # github.com/Sh1Yo/x8 release binary -- hidden parameter discovery (parameter_discovery.py)
+  kr: ""                         # github.com/assetnote/kiterunner release binary -- API route brute-forcing (api_discovery.py)
+  nuclei: ""                     # go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest -- used ONLY for scoped CVE-watchlist verification (vuln_verify.py)
+  go-stare: ""
+  docker: ""                     # only needed for the gowitness_scan_docker() fallback path
+  gowitness: ""                  # go install github.com/sensepost/gowitness@latest -- native, no Docker needed; default scan --screenshots engine
+  eyewitness: ""                 # see docs/SETUP.md for the no-sudo install path; use for its default-cred-checker against your top-scored hosts, not as the default scan engine
+  VHostScan: ""
+  github-subdomains: ""
+  gitdorker: ""                   # github.com/obheda12/GitDorker -- maintained dork database + real search execution (github_recon.gitdorker_scan)
+  cloud_enum: ""                  # github.com/initstring/cloud_enum -- brute-forces AWS/Azure/GCP storage names (open_storage.cloud_enum_scan)
+  trufflehog: ""
+  favfreak: ""
+  waymore: ""
+
+recon:
+  output_dir: "./hunternexus-output"
+  # A fresh resolvers.txt is fetched automatically from trickest/resolvers
+  # if this is left blank and `scan --bruteforce`/`--permutation` is used
+  # without an explicit --resolvers path.
+  resolvers_path: ""
+
+# Point this at FavFreak's own fingerprint data file (or a
+# community-maintained favicon-hash database) if you want
+# favicon_fingerprint.py's match_against_database() to work. hunternexus
+# does not ship hardcoded hash values of its own -- see
+# hunternexus/modules/favicon_fingerprint.py for why.
+favicon_db_path: ""
