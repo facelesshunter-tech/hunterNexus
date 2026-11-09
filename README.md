@@ -72,8 +72,15 @@ documented in the relevant module rather than hidden.
 pip install -e .
 cp config/config.example.yaml config/config.yaml   # fill in whatever API keys you have
 hunternexus config-check                             # see what's currently active
-hunternexus scan example.com
+hunternexus run                                       # guided, interactive scan
 ```
+
+`hunternexus run` is the guided entry point: it prompts for a target (or
+a file of targets), confirms authorization, asks for a scan depth, and
+runs the pipeline with live stage-by-stage progress. For scripting and
+automation, `hunternexus scan <target> [flags...]` runs the same
+pipeline non-interactively — see [`docs/SETUP.md`](docs/SETUP.md) for
+the full flag reference and a staged usage walkthrough.
 
 Full setup — every external tool's install command and every API key's
 signup link — is in [`docs/SETUP.md`](docs/SETUP.md).
@@ -110,7 +117,10 @@ stages in the right order.
 
 ```
 hunternexus/
-  cli.py             # entrypoint: scan / changes / sources / config-check
+  cli.py             # entrypoint: run / scan / changes / sources / config-check
+  wizard.py           # interactive pre-flight prompts for `run`
+  ui.py               # live stage-progress display for `run`
+  banner.py           # startup banner
   pipeline.py         # orchestrates every module into one staged pipeline
   config.py           # API key + tool-path resolution (config.yaml + env vars)
   state.py            # SQLite asset inventory, new-asset / source-reliability queries

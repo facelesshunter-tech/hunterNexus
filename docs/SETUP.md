@@ -180,6 +180,19 @@ Recommended priority order for getting the most out of a fresh install:
 
 ```bash
 hunternexus config-check
+hunternexus run
+```
+
+`hunternexus run` is the guided entry point -- it prompts for your
+target (or a file of targets), an explicit authorization confirmation,
+and a scan depth (Quick / Standard / Full / Advanced), then runs with
+live stage-by-stage progress. This is the easiest way to run a scan,
+and the one worth using for anything presented to someone else.
+
+For scripting and automation, the same pipeline is available
+non-interactively via flags:
+
+```bash
 hunternexus scan example.com
 hunternexus scan example.com --github --screenshots --favicon --favicon-db ./favfreak-hashes.json
 hunternexus scan example.com --bruteforce --permutation --wordlist words.txt --resolvers resolvers.txt

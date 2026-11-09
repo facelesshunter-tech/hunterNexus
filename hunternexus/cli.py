@@ -1,5 +1,6 @@
 """hunternexus CLI.
 
+    hunternexus run
     hunternexus scan example.com
     hunternexus scan example.com --github --bruteforce --wordlist words.txt --resolvers resolvers.txt
     hunternexus changes example.com --since-hours 24
@@ -11,6 +12,7 @@ from __future__ import annotations
 
 import sys
 import time
+from dataclasses import replace
 from pathlib import Path
 
 import click
@@ -176,6 +178,79 @@ def scan(
     click.echo(f"Architecture report:  {result['architecture_report']}")
     if result['findings_report']:
         click.echo(f"Deep-dive findings:   {result['findings_report']}")
+
+
+@cli.command()
+@click.option("--output-dir", type=click.Path(path_type=Path), default=Path("./hunternexus-output"), help="Base directory -- each target gets its own subdirectory inside it")
+@click.pass_context
+def run(ctx, output_dir):
+    """Guided, interactive scan. Prompts for target(s), an explicit
+    authorization confirmation, and a scan depth (or a fully custom
+    stage selection), then runs the pipeline with live stage-by-stage
+    progress. This is the presentable, demo-ready entry point; `scan`
+    remains the flag-driven command for scripting and automation."""
+    from rich.console import Console
+    from rich.table import Table
+
+    from hunternexus.banner import print_banner
+    from hunternexus.ui import StageReporter, estimate_stage_count
+    from hunternexus.wizard import build_options, confirm_summary, prompt_authorization, prompt_preset, prompt_targets
+
+    config: Config = ctx.obj["config"]
+    console = Console()
+
+    print_banner(console)
+    targets = prompt_targets(console)
+    prompt_authorization(console, targets)
+    preset = prompt_preset(console)
+    options_template = build_options(console, preset, output_dir)
+    confirm_summary(console, targets, preset, options_template)
+
+    results = []
+    for i, target in enumerate(targets, start=1):
+        console.print()
+        console.rule(f"[bold green]TARGET {i}/{len(targets)}: {target}[/]", style="green")
+        console.print()
+
+        target_output_dir = output_dir / target
+        options = replace(options_template, output_dir=target_output_dir)
+
+        if (options.use_bruteforce or options.use_permutation) and options.resolvers is None:
+            from hunternexus.modules.subdomain_bruteforce import fetch_resolvers
+
+            target_output_dir.mkdir(parents=True, exist_ok=True)
+            resolvers_path = target_output_dir / "resolvers.txt"
+            with console.status("[green]Fetching a fresh resolver list...[/]"):
+                try:
+                    fetch_resolvers(resolvers_path)
+                    options.resolvers = resolvers_path
+                except Exception as e:
+                    console.print(f"  [yellow]Failed to fetch resolvers ({e}); bruteforce/permutation will be skipped for this target.[/]")
+
+        reporter = StageReporter(console, total_estimate=estimate_stage_count(options))
+        pipeline = Pipeline(config, options, on_stage=reporter.callback)
+        try:
+            result = pipeline.run(target)
+            results.append(result)
+        finally:
+            pipeline.close()
+
+        console.print()
+        console.print(f"[bold green]✓ {target} complete[/]  [dim]({result['elapsed_seconds']:.1f}s)[/]")
+
+    console.print()
+    console.rule("[bold green]Summary[/]", style="green")
+    console.print()
+    table = Table(show_header=True, header_style="bold cyan")
+    table.add_column("Target")
+    table.add_column("Live hosts", justify="right")
+    table.add_column("New assets", justify="right")
+    table.add_column("Time", justify="right")
+    table.add_column("Report")
+    for r in results:
+        table.add_row(r["target"], str(r["live_hosts"]), str(r["new_assets"]), f"{r['elapsed_seconds']:.1f}s", r["markdown_report"])
+    console.print(table)
+    console.print()
 
 
 @cli.command()
