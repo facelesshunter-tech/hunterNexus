@@ -2,11 +2,36 @@
 
 ## 1. Python environment
 
+Two ways to install, depending on how you want to run it:
+
+**Option A — project-local venv** (if you're actively developing the
+tool itself):
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
+
+The `hunternexus` command only works while that venv is activated.
+
+**Option B — global command via pipx** (recommended for regular use —
+run `hunternexus` from any directory, no activation needed):
+
+```bash
+pipx install -e /path/to/hunterNexus
+```
+
+`-e` (editable) means `pipx` links directly to your checkout rather than
+copying it, so `git pull`-ing new changes takes effect immediately with
+no reinstall. Confirm it worked:
+
+```bash
+hunternexus --help
+```
+
+If `hunternexus: command not found`, pipx's bin directory isn't on your
+`PATH` yet — run `pipx ensurepath`, then open a new terminal.
 
 ## 2. External tool binaries
 
@@ -58,8 +83,22 @@ are currently detected on `PATH`.
 ## 3. API keys
 
 Copy `config/config.example.yaml` to `config/config.yaml` and fill in
-whatever you have. Recommended priority order for getting the most out
-of a fresh install:
+whatever you have.
+
+**If you installed with pipx (Option B above)**, `hunternexus` runs from
+any directory, so it won't find a `config/config.yaml` relative to
+wherever your shell happens to be. Put your filled-in config at
+`~/.config/hunternexus/config.yaml` instead — that's the default path it
+checks when no local `config/config.yaml` is found in the current
+directory:
+
+```bash
+mkdir -p ~/.config/hunternexus
+cp config/config.example.yaml ~/.config/hunternexus/config.yaml
+# edit ~/.config/hunternexus/config.yaml with your real keys
+```
+
+Recommended priority order for getting the most out of a fresh install:
 
 1. **Chaos** — free, instant signup: https://chaos.projectdiscovery.io
 2. **GitHub tokens** — free, instant: https://github.com/settings/tokens
